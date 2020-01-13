@@ -15910,23 +15910,32 @@ var MicRecorder = function () {
      * @return Promise
      */
     value: function start() {
-      var _this2 = this;
+        var _this2 = this;
 
-      var AudioContext = window.AudioContext || window.webkitAudioContext;
-      this.context = new AudioContext();
-      this.config.sampleRate = this.context.sampleRate;
-      this.lameEncoder = new Encoder(this.config);
+        const AudioContext = window.AudioContext // Default
+            || window.webkitAudioContext // Safari and old versions of Chrome
+            || false;
 
-      var audio = this.config.deviceId ? { deviceId: { exact: this.config.deviceId } } : true;
+        if (AudioContext) {
+            this.context = new AudioContext();
+            this.config.sampleRate = this.context.sampleRate;
+            this.lameEncoder = new Encoder(this.config);
 
-      return new Promise(function (resolve, reject) {
-        navigator.mediaDevices.getUserMedia({ audio: audio }).then(function (stream) {
-          _this2.addMicrophoneListener(stream);
-          resolve(stream);
-        }).catch(function (err) {
-          reject(err);
-        });
-      });
+            var audio = this.config.deviceId ? { deviceId: { exact: this.config.deviceId } } : true;
+
+            return new Promise(function (resolve, reject) {
+                navigator.mediaDevices.getUserMedia({ audio: audio }).then(function (stream) {
+                    _this2.addMicrophoneListener(stream);
+                    resolve(stream);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            });
+        } else {
+            // Web Audio API is not supported
+            // Alert the user
+            alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider upgrading to the latest version or downloading Google Chrome or Mozilla Firefox");
+        }
     }
   }, {
     key: 'getMp3',
